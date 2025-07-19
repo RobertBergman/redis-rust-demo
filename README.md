@@ -31,7 +31,7 @@ A comprehensive Rust application demonstrating Redis features, patterns, and bes
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/yourusername/redis-rust-demo.git
+git clone https://github.com/RobertBergman/redis-rust-demo.git
 cd redis-rust-demo
 ```
 
