@@ -1,0 +1,834 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Redis Usage Guide - Interactive Demo</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f5f5f5;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            background: linear-gradient(135deg, #dc382d 0%, #a82820 100%);
+            color: white;
+            padding: 2rem 0;
+            margin-bottom: 2rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        header h1 {
+            text-align: center;
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        header p {
+            text-align: center;
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+        
+        .intro {
+            background: white;
+            padding: 2rem;
+            border-radius: 8px;
+            margin-bottom: 2rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        
+        .intro h2 {
+            color: #dc382d;
+            margin-bottom: 1rem;
+        }
+        
+        .demo-section {
+            background: white;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        
+        .demo-section h2 {
+            color: #dc382d;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .demo-section h3 {
+            color: #666;
+            margin: 1.5rem 0 1rem 0;
+            font-size: 1.3rem;
+        }
+        
+        .use-case {
+            background: #f8f9fa;
+            padding: 1.5rem;
+            border-radius: 6px;
+            margin: 1rem 0;
+            border-left: 4px solid #dc382d;
+        }
+        
+        .use-case h4 {
+            color: #dc382d;
+            margin-bottom: 0.5rem;
+        }
+        
+        .command-example {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            padding: 1rem;
+            border-radius: 4px;
+            margin: 1rem 0;
+            font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+            overflow-x: auto;
+        }
+        
+        .command-example .comment {
+            color: #6a9955;
+        }
+        
+        .command-example .command {
+            color: #569cd6;
+        }
+        
+        .command-example .string {
+            color: #ce9178;
+        }
+        
+        .command-example .number {
+            color: #b5cea8;
+        }
+        
+        .rust-example {
+            background: #2b2b2b;
+            color: #dcdcdc;
+            padding: 1rem;
+            border-radius: 4px;
+            margin: 1rem 0;
+            font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+            overflow-x: auto;
+            position: relative;
+        }
+        
+        .rust-example::before {
+            content: "Rust";
+            position: absolute;
+            top: 0;
+            right: 0;
+            background: #ce422b;
+            color: white;
+            padding: 0.2rem 0.5rem;
+            font-size: 0.8rem;
+            border-bottom-left-radius: 4px;
+        }
+        
+        .performance-tip {
+            background: #e8f4f8;
+            border-left: 4px solid #0288d1;
+            padding: 1rem;
+            margin: 1rem 0;
+            border-radius: 4px;
+        }
+        
+        .performance-tip strong {
+            color: #0288d1;
+        }
+        
+        .warning {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 1rem;
+            margin: 1rem 0;
+            border-radius: 4px;
+        }
+        
+        .warning strong {
+            color: #856404;
+        }
+        
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin: 1.5rem 0;
+        }
+        
+        .feature-card {
+            background: #f8f9fa;
+            padding: 1.5rem;
+            border-radius: 6px;
+            border: 1px solid #e9ecef;
+        }
+        
+        .feature-card h4 {
+            color: #dc382d;
+            margin-bottom: 0.5rem;
+        }
+        
+        .icon {
+            font-size: 1.5rem;
+            margin-right: 0.5rem;
+        }
+        
+        .toc {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin-bottom: 2rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        
+        .toc h3 {
+            color: #dc382d;
+            margin-bottom: 1rem;
+        }
+        
+        .toc ul {
+            list-style: none;
+            padding-left: 0;
+        }
+        
+        .toc li {
+            margin: 0.5rem 0;
+        }
+        
+        .toc a {
+            color: #0288d1;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            padding: 0.5rem;
+            border-radius: 4px;
+            transition: background 0.2s;
+        }
+        
+        .toc a:hover {
+            background: #f8f9fa;
+        }
+        
+        .run-command {
+            background: #28a745;
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            font-family: monospace;
+            display: inline-block;
+            margin: 0.5rem 0;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+            
+            header h1 {
+                font-size: 2rem;
+            }
+            
+            .demo-section {
+                padding: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1>🚀 Redis in Action</h1>
+            <p>Understanding Redis Through Practical Examples</p>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="intro">
+            <h2>What is Redis?</h2>
+            <p>Redis (Remote Dictionary Server) is an open-source, in-memory data structure store used as a database, cache, message broker, and queue. It supports various data structures such as strings, hashes, lists, sets, sorted sets, bitmaps, hyperloglogs, and geospatial indexes.</p>
+            
+            <h3>Why Redis?</h3>
+            <ul style="margin-left: 2rem; margin-top: 1rem;">
+                <li>⚡ <strong>Blazing Fast</strong>: In-memory operations with sub-millisecond latency</li>
+                <li>🔧 <strong>Versatile</strong>: Multiple data structures for different use cases</li>
+                <li>📈 <strong>Scalable</strong>: Supports clustering and replication</li>
+                <li>💾 <strong>Persistent</strong>: Optional data persistence to disk</li>
+                <li>🔄 <strong>Atomic Operations</strong>: All operations are atomic</li>
+            </ul>
+        </div>
+
+        <div class="toc">
+            <h3>📚 Table of Contents</h3>
+            <ul>
+                <li><a href="#caching"><span class="icon">💾</span>Caching & Session Storage</a></li>
+                <li><a href="#counters"><span class="icon">🔢</span>Counters & Rate Limiting</a></li>
+                <li><a href="#queues"><span class="icon">📬</span>Message Queues & Task Management</a></li>
+                <li><a href="#realtime"><span class="icon">⚡</span>Real-time Features</a></li>
+                <li><a href="#analytics"><span class="icon">📊</span>Analytics & Leaderboards</a></li>
+                <li><a href="#distributed"><span class="icon">🔐</span>Distributed Systems Patterns</a></li>
+            </ul>
+        </div>
+
+        <!-- Caching Section -->
+        <div class="demo-section" id="caching">
+            <h2><span class="icon">💾</span>Caching & Session Storage</h2>
+            
+            <p>One of Redis's most common use cases is as a high-performance cache layer between your application and database.</p>
+            
+            <h3>Basic Caching Pattern</h3>
+            <div class="command-example">
+<span class="comment"># Check if data exists in cache</span>
+<span class="command">GET</span> <span class="string">"user:1000:profile"</span>
+<span class="comment"># If not found (nil), fetch from database and cache it</span>
+<span class="command">SET</span> <span class="string">"user:1000:profile"</span> <span class="string">"{...json data...}"</span> <span class="command">EX</span> <span class="number">3600</span>
+            </div>
+            
+            <div class="rust-example">
+// Cache-aside pattern in Rust
+async fn get_user_profile(user_id: &str) -> Result<UserProfile> {
+    let cache_key = format!("user:{}:profile", user_id);
+    
+    // Try cache first
+    if let Some(cached) = redis_conn.get(&cache_key).await? {
+        return Ok(serde_json::from_str(&cached)?);
+    }
+    
+    // Cache miss - fetch from database
+    let profile = fetch_from_database(user_id).await?;
+    
+    // Cache for 1 hour
+    redis_conn.set_ex(
+        &cache_key, 
+        serde_json::to_string(&profile)?, 
+        3600
+    ).await?;
+    
+    Ok(profile)
+}
+            </div>
+            
+            <div class="use-case">
+                <h4>🛒 E-commerce Product Catalog</h4>
+                <p>Cache frequently accessed product information to reduce database load:</p>
+                <div class="command-example">
+<span class="comment"># Cache product details with 24-hour expiration</span>
+<span class="command">SET</span> <span class="string">"product:12345"</span> <span class="string">'{"name":"Laptop","price":999.99,"stock":50}'</span> <span class="command">EX</span> <span class="number">86400</span>
+
+<span class="comment"># Cache category listings</span>
+<span class="command">SET</span> <span class="string">"category:electronics:products"</span> <span class="string">'["12345","12346","12347"]'</span> <span class="command">EX</span> <span class="number">3600</span>
+                </div>
+            </div>
+            
+            <h3>Session Storage</h3>
+            <p>Redis excels at storing user sessions due to its automatic expiration feature:</p>
+            
+            <div class="command-example">
+<span class="comment"># Store user session with 30-minute sliding expiration</span>
+<span class="command">HSET</span> <span class="string">"session:abc123"</span> 
+    <span class="string">"user_id"</span> <span class="string">"1000"</span>
+    <span class="string">"username"</span> <span class="string">"alice"</span>
+    <span class="string">"last_activity"</span> <span class="string">"2024-01-15T10:30:00Z"</span>
+<span class="command">EXPIRE</span> <span class="string">"session:abc123"</span> <span class="number">1800</span>
+
+<span class="comment"># Extend session on activity</span>
+<span class="command">EXPIRE</span> <span class="string">"session:abc123"</span> <span class="number">1800</span>
+            </div>
+            
+            <div class="performance-tip">
+                <strong>💡 Performance Tip:</strong> Use Redis Hashes for session storage instead of serialized strings. This allows partial updates without rewriting the entire session.
+            </div>
+        </div>
+
+        <!-- Counters Section -->
+        <div class="demo-section" id="counters">
+            <h2><span class="icon">🔢</span>Counters & Rate Limiting</h2>
+            
+            <p>Redis's atomic increment operations make it perfect for implementing counters and rate limiting.</p>
+            
+            <h3>View Counters</h3>
+            <div class="command-example">
+<span class="comment"># Increment page view counter</span>
+<span class="command">INCR</span> <span class="string">"stats:page:home:views"</span>
+<span class="comment"># Returns: 1234</span>
+
+<span class="comment"># Track daily views with automatic expiration</span>
+<span class="command">INCR</span> <span class="string">"stats:page:home:views:2024-01-15"</span>
+<span class="command">EXPIRE</span> <span class="string">"stats:page:home:views:2024-01-15"</span> <span class="number">604800</span> <span class="comment"># 7 days</span>
+            </div>
+            
+            <div class="use-case">
+                <h4>🚦 API Rate Limiting</h4>
+                <p>Implement a sliding window rate limiter to prevent API abuse:</p>
+                <div class="rust-example">
+async fn check_rate_limit(api_key: &str, limit: u32) -> Result<bool> {
+    let key = format!("rate_limit:{}:{}", api_key, Utc::now().timestamp() / 60);
+    
+    // Increment counter
+    let count: u32 = redis_conn.incr(&key, 1).await?;
+    
+    // Set expiration on first increment
+    if count == 1 {
+        redis_conn.expire(&key, 60).await?;
+    }
+    
+    Ok(count <= limit)
+}
+                </div>
+            </div>
+            
+            <h3>Real-time Analytics</h3>
+            <div class="command-example">
+<span class="comment"># Track user actions</span>
+<span class="command">HINCRBY</span> <span class="string">"analytics:2024-01-15"</span> <span class="string">"page_views"</span> <span class="number">1</span>
+<span class="command">HINCRBY</span> <span class="string">"analytics:2024-01-15"</span> <span class="string">"signups"</span> <span class="number">1</span>
+<span class="command">HINCRBY</span> <span class="string">"analytics:2024-01-15"</span> <span class="string">"purchases"</span> <span class="number">1</span>
+
+<span class="comment"># Get all metrics for the day</span>
+<span class="command">HGETALL</span> <span class="string">"analytics:2024-01-15"</span>
+            </div>
+        </div>
+
+        <!-- Message Queues Section -->
+        <div class="demo-section" id="queues">
+            <h2><span class="icon">📬</span>Message Queues & Task Management</h2>
+            
+            <p>Redis Lists provide excellent primitives for implementing message queues and task management systems.</p>
+            
+            <h3>Simple Task Queue</h3>
+            <div class="command-example">
+<span class="comment"># Producer: Add tasks to queue</span>
+<span class="command">RPUSH</span> <span class="string">"tasks:email"</span> <span class="string">'{"to":"user@example.com","subject":"Welcome!"}'</span>
+<span class="command">RPUSH</span> <span class="string">"tasks:email"</span> <span class="string">'{"to":"admin@example.com","subject":"New signup"}'</span>
+
+<span class="comment"># Consumer: Process tasks (blocking)</span>
+<span class="command">BLPOP</span> <span class="string">"tasks:email"</span> <span class="number">30</span> <span class="comment"># Wait up to 30 seconds</span>
+            </div>
+            
+            <div class="rust-example">
+// Task processor with automatic retry
+async fn process_tasks(queue: &str) -> Result<()> {
+    loop {
+        // Blocking pop with 5-second timeout
+        match redis_conn.blpop(queue, 5.0).await? {
+            Some((_, task_data)) => {
+                match process_single_task(&task_data).await {
+                    Ok(_) => println!("Task completed successfully"),
+                    Err(e) => {
+                        // Retry by adding back to queue
+                        redis_conn.rpush(&format!("{}_retry", queue), task_data).await?;
+                        eprintln!("Task failed: {}", e);
+                    }
+                }
+            }
+            None => {
+                // No tasks available, continue waiting
+                continue;
+            }
+        }
+    }
+}
+            </div>
+            
+            <div class="use-case">
+                <h4>📧 Email Queue System</h4>
+                <p>Implement a priority-based email queue:</p>
+                <div class="command-example">
+<span class="comment"># High priority emails (transactional)</span>
+<span class="command">LPUSH</span> <span class="string">"emails:high"</span> <span class="string">'{"type":"password_reset","to":"user@example.com"}'</span>
+
+<span class="comment"># Normal priority emails (newsletters)</span>
+<span class="command">RPUSH</span> <span class="string">"emails:normal"</span> <span class="string">'{"type":"newsletter","to":"subscriber@example.com"}'</span>
+
+<span class="comment"># Consumer checks high priority first</span>
+<span class="command">BLPOP</span> <span class="string">"emails:high"</span> <span class="string">"emails:normal"</span> <span class="number">10</span>
+                </div>
+            </div>
+            
+            <div class="warning">
+                <strong>⚠️ Warning:</strong> For mission-critical queues, consider using Redis Streams or dedicated message queue systems like RabbitMQ or Kafka for better reliability and features.
+            </div>
+        </div>
+
+        <!-- Real-time Features Section -->
+        <div class="demo-section" id="realtime">
+            <h2><span class="icon">⚡</span>Real-time Features</h2>
+            
+            <p>Redis's speed and data structures enable powerful real-time features.</p>
+            
+            <h3>Live User Tracking</h3>
+            <div class="command-example">
+<span class="comment"># Track online users with Sets</span>
+<span class="command">SADD</span> <span class="string">"users:online"</span> <span class="string">"user:1000"</span> <span class="string">"user:1001"</span> <span class="string">"user:1002"</span>
+
+<span class="comment"># Get count of online users</span>
+<span class="command">SCARD</span> <span class="string">"users:online"</span>
+<span class="comment"># Returns: 3</span>
+
+<span class="comment"># Check if specific user is online</span>
+<span class="command">SISMEMBER</span> <span class="string">"users:online"</span> <span class="string">"user:1000"</span>
+<span class="comment"># Returns: 1 (true)</span>
+
+<span class="comment"># User goes offline</span>
+<span class="command">SREM</span> <span class="string">"users:online"</span> <span class="string">"user:1000"</span>
+            </div>
+            
+            <div class="use-case">
+                <h4>💬 Chat Room Presence</h4>
+                <p>Track users in chat rooms with automatic expiration:</p>
+                <div class="rust-example">
+async fn join_chat_room(user_id: &str, room_id: &str) -> Result<()> {
+    let room_key = format!("chatroom:{}:users", room_id);
+    let presence_key = format!("presence:{}:{}", room_id, user_id);
+    
+    // Add user to room
+    redis_conn.sadd(&room_key, user_id).await?;
+    
+    // Set presence with expiration (heartbeat)
+    redis_conn.set_ex(&presence_key, "1", 30).await?;
+    
+    // Get all users in room
+    let users: Vec<String> = redis_conn.smembers(&room_key).await?;
+    println!("Users in room: {:?}", users);
+    
+    Ok(())
+}
+                </div>
+            </div>
+            
+            <h3>Activity Feeds</h3>
+            <div class="command-example">
+<span class="comment"># Add activities to user's feed (newest first)</span>
+<span class="command">LPUSH</span> <span class="string">"feed:user:1000"</span> <span class="string">'{"type":"post","user":"Alice","content":"Hello Redis!"}'</span>
+<span class="command">LPUSH</span> <span class="string">"feed:user:1000"</span> <span class="string">'{"type":"like","user":"Bob","post_id":"123"}'</span>
+
+<span class="comment"># Limit feed to 100 most recent items</span>
+<span class="command">LTRIM</span> <span class="string">"feed:user:1000"</span> <span class="number">0</span> <span class="number">99</span>
+
+<span class="comment"># Get latest 10 activities</span>
+<span class="command">LRANGE</span> <span class="string">"feed:user:1000"</span> <span class="number">0</span> <span class="number">9</span>
+            </div>
+        </div>
+
+        <!-- Analytics Section -->
+        <div class="demo-section" id="analytics">
+            <h2><span class="icon">📊</span>Analytics & Leaderboards</h2>
+            
+            <p>Redis Sets and Sorted Sets are perfect for analytics and ranking systems.</p>
+            
+            <h3>Unique Visitor Tracking</h3>
+            <div class="command-example">
+<span class="comment"># Track unique visitors per day</span>
+<span class="command">SADD</span> <span class="string">"visitors:2024-01-15"</span> <span class="string">"user:1000"</span> <span class="string">"user:1001"</span> <span class="string">"user:1002"</span>
+<span class="command">SADD</span> <span class="string">"visitors:2024-01-16"</span> <span class="string">"user:1001"</span> <span class="string">"user:1003"</span> <span class="string">"user:1004"</span>
+
+<span class="comment"># Get unique visitor count</span>
+<span class="command">SCARD</span> <span class="string">"visitors:2024-01-15"</span>
+<span class="comment"># Returns: 3</span>
+
+<span class="comment"># Find returning visitors</span>
+<span class="command">SINTER</span> <span class="string">"visitors:2024-01-15"</span> <span class="string">"visitors:2024-01-16"</span>
+<span class="comment"># Returns: ["user:1001"]</span>
+
+<span class="comment"># Find new visitors on Jan 16</span>
+<span class="command">SDIFF</span> <span class="string">"visitors:2024-01-16"</span> <span class="string">"visitors:2024-01-15"</span>
+<span class="comment"># Returns: ["user:1003", "user:1004"]</span>
+            </div>
+            
+            <div class="use-case">
+                <h4>🏆 Gaming Leaderboard</h4>
+                <p>Implement a real-time leaderboard with Sorted Sets:</p>
+                <div class="command-example">
+<span class="comment"># Add/update player scores</span>
+<span class="command">ZADD</span> <span class="string">"leaderboard:global"</span> <span class="number">1500</span> <span class="string">"player:alice"</span>
+<span class="command">ZADD</span> <span class="string">"leaderboard:global"</span> <span class="number">2100</span> <span class="string">"player:bob"</span>
+<span class="command">ZADD</span> <span class="string">"leaderboard:global"</span> <span class="number">1800</span> <span class="string">"player:charlie"</span>
+
+<span class="comment"># Get top 10 players</span>
+<span class="command">ZREVRANGE</span> <span class="string">"leaderboard:global"</span> <span class="number">0</span> <span class="number">9</span> <span class="command">WITHSCORES</span>
+
+<span class="comment"># Get player rank (0-based)</span>
+<span class="command">ZREVRANK</span> <span class="string">"leaderboard:global"</span> <span class="string">"player:alice"</span>
+
+<span class="comment"># Get players around a specific player</span>
+<span class="command">ZREVRANGE</span> <span class="string">"leaderboard:global"</span> <span class="number">5</span> <span class="number">15</span> <span class="command">WITHSCORES</span>
+                </div>
+            </div>
+            
+            <div class="performance-tip">
+                <strong>💡 Performance Tip:</strong> For very large leaderboards (millions of entries), consider partitioning by time period or region to maintain performance.
+            </div>
+        </div>
+
+        <!-- Distributed Systems Section -->
+        <div class="demo-section" id="distributed">
+            <h2><span class="icon">🔐</span>Distributed Systems Patterns</h2>
+            
+            <p>Redis provides primitives for implementing distributed system patterns.</p>
+            
+            <h3>Distributed Locking</h3>
+            <div class="command-example">
+<span class="comment"># Acquire lock with expiration (Redlock pattern simplified)</span>
+<span class="command">SET</span> <span class="string">"lock:resource:123"</span> <span class="string">"unique-client-id"</span> <span class="command">NX</span> <span class="command">EX</span> <span class="number">30</span>
+<span class="comment"># Returns: OK if lock acquired, nil if already locked</span>
+
+<span class="comment"># Release lock (only if we own it)</span>
+<span class="command">EVAL</span> <span class="string">"
+if redis.call('get', KEYS[1]) == ARGV[1] then
+    return redis.call('del', KEYS[1])
+else
+    return 0
+end"</span> <span class="number">1</span> <span class="string">"lock:resource:123"</span> <span class="string">"unique-client-id"</span>
+            </div>
+            
+            <div class="rust-example">
+// Distributed lock implementation
+async fn acquire_lock(resource: &str, ttl_seconds: u64) -> Result<Option<String>> {
+    let lock_key = format!("lock:{}", resource);
+    let lock_id = Uuid::new_v4().to_string();
+    
+    // Try to acquire lock
+    let acquired: bool = redis_conn
+        .set_nx(&lock_key, &lock_id)
+        .expire(ttl_seconds)
+        .query_async(&mut conn)
+        .await?;
+    
+    if acquired {
+        Ok(Some(lock_id))
+    } else {
+        Ok(None)
+    }
+}
+
+async fn release_lock(resource: &str, lock_id: &str) -> Result<bool> {
+    let lock_key = format!("lock:{}", resource);
+    
+    // Lua script for atomic check-and-delete
+    let script = r#"
+        if redis.call('get', KEYS[1]) == ARGV[1] then
+            return redis.call('del', KEYS[1])
+        else
+            return 0
+        end
+    "#;
+    
+    let released: i32 = redis_conn
+        .eval_async(script, &[lock_key], &[lock_id])
+        .await?;
+    
+    Ok(released == 1)
+}
+            </div>
+            
+            <div class="use-case">
+                <h4>🎯 Idempotency Keys</h4>
+                <p>Prevent duplicate operations in distributed systems:</p>
+                <div class="command-example">
+<span class="comment"># Check if operation was already processed</span>
+<span class="command">SET</span> <span class="string">"idempotency:payment:abc123"</span> <span class="string">'{"status":"processed","amount":99.99}'</span> <span class="command">NX</span> <span class="command">EX</span> <span class="number">86400</span>
+<span class="comment"># Returns: OK if first time, nil if duplicate</span>
+
+<span class="comment"># For long-running operations, use a state machine</span>
+<span class="command">HSET</span> <span class="string">"operation:xyz789"</span>
+    <span class="string">"status"</span> <span class="string">"processing"</span>
+    <span class="string">"started_at"</span> <span class="string">"2024-01-15T10:00:00Z"</span>
+    <span class="string">"worker_id"</span> <span class="string">"worker-1"</span>
+                </div>
+            </div>
+            
+            <div class="warning">
+                <strong>⚠️ Warning:</strong> For critical distributed locking, consider using the full Redlock algorithm or tools like Apache ZooKeeper or etcd for stronger consistency guarantees.
+            </div>
+        </div>
+
+        <!-- Best Practices -->
+        <div class="demo-section">
+            <h2>📋 Redis Best Practices</h2>
+            
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <h4>🔑 Key Naming Conventions</h4>
+                    <p>Use consistent, hierarchical key names:</p>
+                    <ul style="margin-left: 1rem; margin-top: 0.5rem;">
+                        <li><code>object-type:id:field</code></li>
+                        <li><code>user:1000:profile</code></li>
+                        <li><code>product:sku-123:inventory</code></li>
+                        <li><code>session:abc123</code></li>
+                    </ul>
+                </div>
+                
+                <div class="feature-card">
+                    <h4>⏰ Always Set Expiration</h4>
+                    <p>Prevent memory leaks by setting TTL on temporary data:</p>
+                    <ul style="margin-left: 1rem; margin-top: 0.5rem;">
+                        <li>Sessions: 30 minutes - 24 hours</li>
+                        <li>Cache: Based on update frequency</li>
+                        <li>Temporary locks: 30 seconds - 5 minutes</li>
+                        <li>Analytics: 7-90 days</li>
+                    </ul>
+                </div>
+                
+                <div class="feature-card">
+                    <h4>🚀 Use Pipelining</h4>
+                    <p>Batch multiple commands for better performance:</p>
+                    <div class="rust-example" style="margin-top: 0.5rem;">
+let pipe = redis::pipe()
+    .set("key1", "value1")
+    .set("key2", "value2")
+    .incr("counter", 1);
+pipe.query_async(&mut conn).await?;
+                    </div>
+                </div>
+                
+                <div class="feature-card">
+                    <h4>📊 Monitor Memory Usage</h4>
+                    <p>Keep track of Redis memory consumption:</p>
+                    <div class="command-example" style="margin-top: 0.5rem;">
+<span class="command">INFO</span> <span class="string">memory</span>
+<span class="command">MEMORY</span> <span class="string">USAGE</span> <span class="string">"mykey"</span>
+                    </div>
+                </div>
+                
+                <div class="feature-card">
+                    <h4>🔄 Use Transactions Wisely</h4>
+                    <p>Group related operations with MULTI/EXEC:</p>
+                    <div class="command-example" style="margin-top: 0.5rem;">
+<span class="command">MULTI</span>
+<span class="command">INCR</span> <span class="string">"counter"</span>
+<span class="command">EXPIRE</span> <span class="string">"counter"</span> <span class="number">3600</span>
+<span class="command">EXEC</span>
+                    </div>
+                </div>
+                
+                <div class="feature-card">
+                    <h4>🛡️ Security Considerations</h4>
+                    <p>Protect your Redis instance:</p>
+                    <ul style="margin-left: 1rem; margin-top: 0.5rem;">
+                        <li>Enable authentication (requirepass)</li>
+                        <li>Use TLS for connections</li>
+                        <li>Bind to private interfaces only</li>
+                        <li>Implement command restrictions</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Running the Demo -->
+        <div class="demo-section">
+            <h2>🚀 Try It Yourself</h2>
+            
+            <p>Run these demos on your local machine:</p>
+            
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <h4>1. Start Redis</h4>
+                    <div class="run-command">docker-compose up -d</div>
+                </div>
+                
+                <div class="feature-card">
+                    <h4>2. Test Connection</h4>
+                    <div class="run-command">cargo run -- ping</div>
+                </div>
+                
+                <div class="feature-card">
+                    <h4>3. Run String Demo</h4>
+                    <div class="run-command">cargo run -- basic strings</div>
+                </div>
+                
+                <div class="feature-card">
+                    <h4>4. Run List Demo</h4>
+                    <div class="run-command">cargo run -- basic lists</div>
+                </div>
+                
+                <div class="feature-card">
+                    <h4>5. Run Set Demo</h4>
+                    <div class="run-command">cargo run -- basic sets</div>
+                </div>
+                
+                <div class="feature-card">
+                    <h4>6. Run Hash Demo</h4>
+                    <div class="run-command">cargo run -- basic hashes</div>
+                </div>
+            </div>
+            
+            <div class="performance-tip" style="margin-top: 2rem;">
+                <strong>🎯 Next Steps:</strong>
+                <ul style="margin-left: 2rem; margin-top: 0.5rem;">
+                    <li>Explore Redis Streams for event sourcing</li>
+                    <li>Try Redis Pub/Sub for real-time messaging</li>
+                    <li>Implement Lua scripts for complex atomic operations</li>
+                    <li>Set up Redis Cluster for horizontal scaling</li>
+                    <li>Monitor performance with Redis Insights</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Smooth scrolling for TOC links
+        document.querySelectorAll('.toc a').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+
+        // Add copy functionality to code blocks
+        document.querySelectorAll('.command-example, .rust-example').forEach(block => {
+            block.style.position = 'relative';
+            
+            const copyBtn = document.createElement('button');
+            copyBtn.textContent = '📋 Copy';
+            copyBtn.style.cssText = `
+                position: absolute;
+                top: 5px;
+                right: 5px;
+                background: #444;
+                color: white;
+                border: none;
+                padding: 5px 10px;
+                border-radius: 3px;
+                cursor: pointer;
+                font-size: 0.8rem;
+                opacity: 0.7;
+                transition: opacity 0.2s;
+            `;
+            
+            copyBtn.addEventListener('mouseenter', () => copyBtn.style.opacity = '1');
+            copyBtn.addEventListener('mouseleave', () => copyBtn.style.opacity = '0.7');
+            
+            copyBtn.addEventListener('click', () => {
+                const text = block.textContent.replace('📋 Copy', '').trim();
+                navigator.clipboard.writeText(text).then(() => {
+                    copyBtn.textContent = '✅ Copied!';
+                    setTimeout(() => copyBtn.textContent = '📋 Copy', 2000);
+                });
+            });
+            
+            block.appendChild(copyBtn);
+        });
+    </script>
+</body>
+</html>
